@@ -10,3 +10,5 @@ dist/
 .venv/
 venv/
 .DS_Store
+results.json
+results.xml

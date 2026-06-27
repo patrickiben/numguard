@@ -14,6 +14,8 @@ jobs:
           python-version: "3.11"
       - name: Self-test (zero dependencies)
         run: python selftest.py
+      - name: CLI + exports (JSON / JUnit)
+        run: python -m numguard cases/ae_overview.json --json results.json --junit results.xml
       - name: Unit tests
         run: |
           python -m pip install --upgrade pip

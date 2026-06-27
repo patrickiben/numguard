@@ -117,6 +117,19 @@ See [`cases/ae_overview.json`](cases/ae_overview.json).
 
 ---
 
+## CI integration & exports
+
+Run a whole case from the command line and emit machine-readable results:
+
+```bash
+python -m numguard cases/ae_overview.json --json results.json --junit results.xml
+```
+
+- **JUnit XML** (`--junit`) drops straight into GitHub Actions, GitLab, or Jenkins test dashboards. In **regression mode** (each candidate has an `expected` verdict) a `<failure>` appears when the guard misbehaves; in **validation mode** (no `expected`) a `<failure>` appears for any draft that fails the gate — so you can wire real generated drafts through CI and fail the build on any ungrounded number.
+- **JSON** (`--json`) gives a structured summary (`total`, `all_ok`, per-case findings) for custom dashboards.
+
+The CLI exit code is the count of records that didn't match expectations, so a CI job fails cleanly when the guard is breached.
+
 ## Design principles
 
 - **The validator is deterministic; the model is not trusted with numbers.** Safety lives in code that can be read, tested, and audited — not in a prompt.
@@ -153,7 +166,7 @@ Run the tests with `pytest -q` (or just `python selftest.py`).
 
 This is the working core of a larger evaluation track:
 
-- [ ] **Scorecard export** (JSON / JUnit) for CI dashboards
+- [x] **Scorecard export** (JSON / JUnit) for CI dashboards
 - [ ] **Grounding for RAG**: flag answer spans not supported by retrieved sources
 - [ ] **Pluggable checks** (units consistency, date grounding, directional-claim checks)
 - [ ] **`promptfoo` / `inspect` adapters** so it drops into existing eval pipelines

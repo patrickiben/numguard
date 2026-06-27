@@ -47,3 +47,20 @@ class Report:
         for f in self.findings:
             lines.append(f"   - [{f.severity}] {f.check}: {f.message}")
         return "\n".join(lines)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """A JSON-serializable view of this report."""
+        return {
+            "passed": self.passed,
+            "n_errors": len(self.errors),
+            "n_warnings": len(self.warnings),
+            "findings": [
+                {
+                    "check": f.check,
+                    "severity": f.severity,
+                    "message": f.message,
+                    "detail": f.detail,
+                }
+                for f in self.findings
+            ],
+        }
