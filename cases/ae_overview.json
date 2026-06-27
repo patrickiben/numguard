@@ -1,0 +1,37 @@
+{
+  "name": "Adverse-event overview narrative (synthetic CP-101)",
+  "abs_tol": 0.05,
+  "rel_tol": 0.001,
+  "context_values": [],
+  "facts": [
+    {"name": "n_treated",   "value": 24,   "unit": "participants"},
+    {"name": "n_any_ae",    "value": 19,   "unit": "participants"},
+    {"name": "pct_any_ae",  "value": 79.2, "unit": "%"},
+    {"name": "n_related",   "value": 10,   "unit": "participants"},
+    {"name": "pct_related", "value": 41.7, "unit": "%"},
+    {"name": "n_severe",    "value": 0,    "unit": "participants"},
+    {"name": "n_sae",       "value": 0,    "unit": "participants"},
+    {"name": "n_headache",  "value": 6,    "unit": "participants"},
+    {"name": "pct_headache","value": 25.0, "unit": "%"}
+  ],
+  "banned_phrases": [
+    "well tolerated",
+    "well-tolerated",
+    "no safety concerns",
+    "favorable safety",
+    "safe and effective"
+  ],
+  "required_names": ["n_treated", "pct_any_ae"],
+  "candidates": [
+    {
+      "label": "grounded_draft",
+      "expected": "pass",
+      "text": "In the safety population (N=24), 19 participants (79.2%) experienced at least one treatment-emergent adverse event. Treatment-related events occurred in 10 participants (41.7%). No severe adverse events or serious adverse events were reported. The most frequently reported preferred term was headache (6 participants, 25.0%)."
+    },
+    {
+      "label": "hallucinated_draft",
+      "expected": "fail",
+      "text": "In the safety population (N=24), 18 participants (75.0%) experienced an adverse event. The study drug was well tolerated, with treatment-related events in 10 participants (41.7%)."
+    }
+  ]
+}

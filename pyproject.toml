@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "numguard"
+version = "0.1.0"
+description = "Evaluation harness and guardrail for LLM output in regulated domains -- the model never sources a number."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Patrick Iben", email = "p.iben@saeny.net"}]
+keywords = ["llm", "evaluation", "guardrails", "hallucination", "clinical", "regulated-ai", "llmops"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/YOUR-GITHUB/numguard"
+
+[tool.setuptools]
+packages = ["numguard"]
