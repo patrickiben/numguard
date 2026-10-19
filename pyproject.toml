@@ -21,7 +21,7 @@ classifiers = [
 dev = ["pytest>=7"]
 
 [project.urls]
-Homepage = "https://github.com/YOUR-GITHUB/numguard"
+Homepage = "https://github.com/patrickiben/numguard"
 
 [tool.setuptools]
 packages = ["numguard"]

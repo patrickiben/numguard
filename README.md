@@ -2,7 +2,7 @@
 
 **An evaluation harness and guardrail for LLM output in regulated domains — built on one rule: _the model never sources a number._**
 
-![ci](https://github.com/YOUR-GITHUB/numguard/actions/workflows/ci.yml/badge.svg)
+![ci](https://github.com/patrickiben/numguard/actions/workflows/ci.yml/badge.svg)
 &nbsp;·&nbsp; Python ≥ 3.9 &nbsp;·&nbsp; zero runtime dependencies &nbsp;·&nbsp; MIT
 
 The single biggest fear about using LLMs near regulated output — clinical reports, safety narratives, financial filings — is a **hallucinated number** slipping into a document a human signs. `numguard` removes that failure mode by construction: a **deterministic validator** checks that every number in a generated draft is traceable to an allowed fact, that no banned qualitative claims appear, and that all required facts are present. The language model only writes prose; `numguard` judges it. Nothing is approved without passing the gate, and a human still signs.
