@@ -1,8 +1,7 @@
 """Command-line entry point: ``python -m numguard <case.json> [--json ...] [--junit ...]``.
 
 Evaluates every candidate draft in a case and (optionally) writes JSON / JUnit
-results for CI. Exit code is the number of records whose verdict did not match
-expectations (0 = all good), so it fails a CI job cleanly.
+results for CI. Exit code is 0 when every verdict matches expectations and 1 otherwise.
 """
 from __future__ import annotations
 

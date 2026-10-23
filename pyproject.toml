@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "numguard"
 version = "0.1.0"
-description = "Evaluation harness and guardrail for LLM output in regulated domains -- the model never sources a number."
+description = "Deterministic numeric-membership checks for generated drafts, with explicit format and semantic limits."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}

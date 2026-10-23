@@ -25,6 +25,10 @@ def load_case(path: str) -> Dict[str, Any]:
         abs_tol=data.get("abs_tol", 0.05),
         rel_tol=data.get("rel_tol", 0.001),
     )
+    factset.validate(data.get("required_names", []))
+    candidates = data.get("candidates", [])
+    if not isinstance(candidates, list) or not candidates:
+        raise ValueError("At least one candidate is required")
     return {
         "name": data.get("name", ""),
         "factset": factset,

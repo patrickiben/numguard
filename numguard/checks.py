@@ -10,9 +10,8 @@ from .report import Finding
 def check_numbers_grounded(text: str, factset: FactSet) -> List[Finding]:
     """ERROR for any number in ``text`` not traceable to an allowed fact value.
 
-    This is the core guardrail. An LLM draft may only restate numbers that
-    already exist in the fact set; anything else was, by definition, produced
-    by the model and is rejected.
+    This checks values recognized by the declared numeric grammar, within
+    tolerance. It does not certify units, attribution or sentence meaning.
     """
     findings: List[Finding] = []
     for val, raw, pos in extract_numbers(text):
@@ -55,7 +54,7 @@ def check_required_facts(
     for name in required_names:
         fact = factset.by_name(name)
         if fact is None or fact.value is None:
-            continue
+            raise ValueError(f"Invalid required fact: {name!r}")
         tol = max(factset.abs_tol, factset.rel_tol * abs(fact.value))
         present = any(abs(n - fact.value) <= tol for n in numbers)
         if not present:

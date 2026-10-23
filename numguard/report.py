@@ -43,7 +43,7 @@ class Report:
             f"({len(self.errors)} error(s), {len(self.warnings)} warning(s))"
         ]
         if not self.findings:
-            lines.append("   - no findings: every number is traceable; no banned claims.")
+            lines.append("   - no findings: recognized numeric values match allowed facts; no listed banned phrases.")
         for f in self.findings:
             lines.append(f"   - [{f.severity}] {f.check}: {f.message}")
         return "\n".join(lines)

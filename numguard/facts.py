@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
+from ._numeric import validate_fact_config, validate_tolerances
+
 
 @dataclass(frozen=True)
 class Fact:
@@ -22,8 +24,8 @@ class FactSet:
 
     Any number found in a draft that does not match a fact value (within
     tolerance) or an explicit context value is treated as *untraceable* -- a
-    guardrail breach. This is the mechanism behind "the model never sources a
-    number": a draft may only restate numbers that already exist here.
+    numeric-membership failure. Only the declared numeric grammar is checked;
+    units, meaning and upstream correctness remain outside this contract.
 
     ``context_values`` are numbers allowed to appear but not required (e.g. a
     phase number or a study-design constant) so they do not false-positive.
@@ -33,6 +35,14 @@ class FactSet:
     context_values: Tuple[float, ...] = ()
     abs_tol: float = 0.05
     rel_tol: float = 0.001
+
+    def __post_init__(self) -> None:
+        self.validate()
+
+    def validate(self, required_names=()) -> None:
+        validate_tolerances(self.abs_tol, self.rel_tol)
+        validate_fact_config(((f.name, f.value) for f in self.facts), required_names,
+                             self.context_values)
 
     def numeric_values(self) -> List[float]:
         vals = [f.value for f in self.facts if f.value is not None]

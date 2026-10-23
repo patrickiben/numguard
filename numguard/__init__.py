@@ -1,11 +1,8 @@
-"""numguard -- evaluation harness & guardrail for LLM output in regulated domains.
+"""Deterministic numeric-membership, banned-phrase and required-value checks.
 
-Core thesis: *the model never sources a number.* A deterministic validator
-checks that every number in a generated draft is traceable to an allowed fact,
-that no banned qualitative claims appear, and that all required facts are
-present. The language model (if any) only produces prose; numguard judges it.
-
-No third-party dependencies. See README.md and run ``python selftest.py``.
+Passing the implemented checks does not certify units, claim semantics, upstream
+truth or completeness. See NUMERIC_CONTRACT.md for the numeric grammar and
+configuration validation. No third-party runtime dependencies.
 """
 from .facts import Fact, FactSet
 from .report import Finding, Report

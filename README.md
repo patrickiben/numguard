@@ -1,11 +1,13 @@
 # numguard
 
-**An evaluation harness and guardrail for LLM output in regulated domains — built on one rule: _the model never sources a number._**
+**A zero-dependency checker for numeric value membership in generated drafts, with banned-phrase and required-fact checks.**
 
 ![ci](https://github.com/patrickiben/numguard/actions/workflows/ci.yml/badge.svg)
 &nbsp;·&nbsp; Python ≥ 3.9 &nbsp;·&nbsp; zero runtime dependencies &nbsp;·&nbsp; MIT
 
-The single biggest fear about using LLMs near regulated output — clinical reports, safety narratives, financial filings — is a **hallucinated number** slipping into a document a human signs. `numguard` removes that failure mode by construction: a **deterministic validator** checks that every number in a generated draft is traceable to an allowed fact, that no banned qualitative claims appear, and that all required facts are present. The language model only writes prose; `numguard` judges it. Nothing is approved without passing the gate, and a human still signs.
+`numguard` deterministically checks recognized numeric tokens in a draft against an explicit fact set, flags listed banned phrases, and verifies required fact values. The model writes prose; the checker provides a review signal, and a qualified human signs the output.
+
+> **Scope:** numeric membership is not factual correctness. Units, sentence attribution, spelled-out numbers, completeness, and qualitative meaning remain unverified. For example, a count of 19 can still be misused as `19%`. Signed decimals, leading decimals and scientific notation are supported; malformed formats fail. See [the numeric contract](NUMERIC_CONTRACT.md) and the executable known-gap tests before using the verdict.
 
 > This is the generalized, open core of a clinical TLF auto-narrative tool I built, where a local model drafts text but is architecturally forbidden from owning a single figure.
 
@@ -14,13 +16,12 @@ The single biggest fear about using LLMs near regulated output — clinical repo
 ## The idea in one picture
 
 ```
-   deterministic facts  ──►  LLM writes prose  ──►  numguard validates  ──►  human signs
-   (the only numbers          (no new numbers       (rejects any number      (gate must be
-    that may appear)           may be invented)       not traceable to a       PASS first)
-                                                      fact + banned claims)
+   allowed facts  ──►  model draft  ──►  numeric / phrase checks  ──►  human review
+   (values + units)     (untrusted)       (declared formats and         (meaning, units,
+                                          configured tolerances)      completeness)
 ```
 
-The model can phrase, summarize, and arrange — but every number in its output must already exist in the fact set. Anything else was, by definition, sourced by the model, and is rejected.
+Each recognized numeric value must match an allowed value within the configured tolerance. This is a value-membership check; it does not bind a value to a particular statement or unit.
 
 ---
 
@@ -39,7 +40,7 @@ case: Adverse-event overview narrative (synthetic CP-101)
 [OK] candidate 'grounded_draft'  expected=pass  got=pass
   draft: In the safety population (N=24), 19 participants (79.2%) experienced ...
   verdict: PASS  (0 error(s), 0 warning(s))
-   - no findings: every number is traceable; no banned claims.
+   - no findings: recognized numeric values match allowed facts; no listed banned phrases.
 ========================================================================
 [OK] candidate 'hallucinated_draft'  expected=fail  got=fail
   draft: In the safety population (N=24), 18 participants (75.0%) experienced ...
@@ -85,11 +86,11 @@ print(report.scorecard())   # itemized findings
 
 | Check | What it enforces | Severity |
 |-------|------------------|----------|
-| `numbers_grounded` | Every number in the text matches an allowed fact value (within tolerance). **This is the core guardrail.** | ERROR |
+| `numbers_grounded` | Each recognized numeric value matches an allowed fact value within tolerance. | ERROR |
 | `unsupported_claims` | No banned qualitative phrasing (e.g. `well tolerated`, `safe and effective`). | ERROR |
 | `required_facts` | Every required fact's value actually appears in the text. | ERROR |
 
-The **`FactSet`** is the contract: the facts (named values + units), optional `context_values` (numbers allowed but not required, e.g. a phase number, so they don't false-positive), and match tolerances (`abs_tol`, `rel_tol`). Number extraction is regex-based and deliberately ignores digits embedded in identifiers (so `CP101` is not read as `101`).
+The **`FactSet`** is the contract: the facts (named values + units), optional `context_values` (numbers allowed but not required, e.g. a phase number, so they don't false-positive), and match tolerances (`abs_tol`, `rel_tol`). The shared [numeric contract](NUMERIC_CONTRACT.md) supports signs, leading decimals and exponents, and deliberately ignores letter-led identifiers such as `CP101` and `CP-101`. Unknown/nonnumeric required names, duplicate facts, non-finite values and invalid tolerances raise `ValueError`; malformed draft numeric tokens produce a failing `numeric_format` finding.
 
 ---
 
@@ -128,12 +129,12 @@ python -m numguard cases/ae_overview.json --json results.json --junit results.xm
 - **JUnit XML** (`--junit`) drops straight into GitHub Actions, GitLab, or Jenkins test dashboards. In **regression mode** (each candidate has an `expected` verdict) a `<failure>` appears when the guard misbehaves; in **validation mode** (no `expected`) a `<failure>` appears for any draft that fails the gate — so you can wire real generated drafts through CI and fail the build on any ungrounded number.
 - **JSON** (`--json`) gives a structured summary (`total`, `all_ok`, per-case findings) for custom dashboards.
 
-The CLI exit code is the count of records that didn't match expectations, so a CI job fails cleanly when the guard is breached.
+The CLI exits 0 when every record matches its expected verdict, and 1 otherwise.
 
 ## Design principles
 
-- **The validator is deterministic; the model is not trusted with numbers.** Safety lives in code that can be read, tested, and audited — not in a prompt.
-- **Fail closed.** A draft passes only if it has zero errors. Silence is not approval.
+- **The validator is deterministic.** Numeric membership and phrase checks live in code that can be read, tested, and audited.
+- **Reject invalid contracts.** A draft passes only the implemented checks; invalid configuration raises an error. A passing report does not approve the draft for release.
 - **Human-in-the-loop by design.** `numguard` gates a draft; it never approves one for release.
 - **Zero dependencies, everything runs.** Pure standard library; `python selftest.py` works on a clean machine. Every file parses; the suite is green in CI.
 - **Synthetic data only.** The bundled example is a synthetic CP-101 study — no real or proprietary data.
@@ -158,7 +159,7 @@ numguard/
 └── .github/workflows/ci.yml
 ```
 
-Run the tests with `pytest -q` (or just `python selftest.py`).
+Run the tests with `python -m pytest -q` (or just `python selftest.py`). CI checks Python 3.9, 3.12 and 3.14, plus an isolated wheel import.
 
 ---
 
@@ -167,7 +168,7 @@ Run the tests with `pytest -q` (or just `python selftest.py`).
 This is the working core of a larger evaluation track:
 
 - [x] **Scorecard export** (JSON / JUnit) for CI dashboards
-- [ ] **Grounding for RAG**: flag answer spans not supported by retrieved sources
+- [x] **Companion lexical RAG screening**: [`grounded-rag`](https://github.com/patrickiben/grounded-rag), with explicit semantic limitations
 - [ ] **Pluggable checks** (units consistency, date grounding, directional-claim checks)
 - [ ] **`promptfoo` / `inspect` adapters** so it drops into existing eval pipelines
 - [ ] **A thin LLM-drafting demo** wired to a local model, end to end
